@@ -17,6 +17,7 @@ class AuthViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             user = serializer.validated_data['user']
             login(request, user)
+            print(f"User {user.email} successfully logged in!")
             return Response({"message": "Login successful!"})
         return Response(serializer.errors, status=400)
 
