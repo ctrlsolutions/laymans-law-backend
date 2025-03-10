@@ -1,6 +1,8 @@
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
 
+from rest_framework.authentication import SessionAuthentication
+
 User = get_user_model()
 
 class EmailBackend(ModelBackend):
@@ -14,3 +16,9 @@ class EmailBackend(ModelBackend):
                 return user
         except User.DoesNotExist:
             return None
+
+
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    def enforce_csrf(self, request):
+        return  # Disable CSRF check for API requests

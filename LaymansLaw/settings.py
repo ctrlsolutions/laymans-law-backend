@@ -43,9 +43,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'user',
+    "rest_framework.authtoken",
 
     
 ]
+
+AUTH_USER_MODEL = 'user.CustomUser'  # Replace 'your_app' with your actual app name
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
