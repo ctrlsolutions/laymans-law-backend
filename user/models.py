@@ -40,7 +40,7 @@ class CustomUser(AbstractBaseUser):
     first_name = models.CharField(max_length=255, blank=False, null=False)
     middle_name = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=False, null=False)
-    birth_date = models.DateField()
+    birth_date = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     contact_number = models.CharField(max_length=13)
     
@@ -71,7 +71,8 @@ class CustomUser(AbstractBaseUser):
     REQUIRED_FIELDS = ['user_type', 'first_name', 'last_name', 'birth_date', 'gender']
     objects = CustomUserManager()
 
-class Lawyer(CustomUser):
+class Lawyer(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='lawyer_profile')
     roll_number = models.IntegerField(unique=True)
     roll_signed_date = models.DateField()
 

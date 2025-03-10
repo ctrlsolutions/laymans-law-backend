@@ -1,6 +1,8 @@
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.authentication import SessionAuthentication
+from django.db.utils import IntegrityError
+from rest_framework import status
 
 from .models import CustomUser
 
@@ -53,12 +55,15 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     # Signup action
     @action(detail=False, methods=["post"], permission_classes=[AllowAny])
     def signup(self, request):
+        print("Signup request received!")
         print("Request data:", request.data)  # Debugging
         serializer = CustomUserSerializer(data=request.data)
                 
         if serializer.is_valid():
-            print("Validated data:", serializer.validated_data)
-            serializer.save() 
-            return Response({"message": "User created successfully!"}, status=201)
+            try:
+                serializer.save() 
+                return Response({"message": "User created successfully!"}, status=status.HTTP_201_CREATED)
+            except IntegrityError:
+                return Response({"error": "User with this email already exists."}, status=status.HTTP_400_BAD_REQUEST)
         print("Errors:", serializer.errors)
-        return Response(serializer.errors, status=400)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
