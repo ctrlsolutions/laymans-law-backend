@@ -80,6 +80,7 @@ WSGI_APPLICATION = 'LaymansLaw.wsgi.application'
 
 CORS_ALLOWED_ORIGINS = config("CORS_ALLOWED_ORIGINS").split(",")
 
+CORS_ALLOW_CREDENTIALS = True 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -136,4 +137,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# AUTH_USER_MODEL = 'user.CustomUser'
+AUTHENTICATION_BACKENDS = [
+    'user.authentication.EmailBackend',  # Use email for login
+    'django.contrib.auth.backends.ModelBackend',  # Keep the default backend
+]

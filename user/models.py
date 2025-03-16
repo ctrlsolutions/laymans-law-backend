@@ -24,6 +24,7 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 class CustomUser(AbstractBaseUser):
+    user_id = models.AutoField(primary_key=True)
     GENDER_CHOICES = (
         ('M', 'Male'),
         ('F', 'Female'),
@@ -31,10 +32,11 @@ class CustomUser(AbstractBaseUser):
         ('N', 'Prefer not to say')
     )
 
-    email = models.EmailField(unique=True, primary_key=True)
+    email = models.EmailField(unique=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     is_staff = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
 
     first_name = models.CharField(max_length=255, blank=False, null=False)
@@ -48,6 +50,17 @@ class CustomUser(AbstractBaseUser):
         ('lawyer', 'Lawyer'),
         ('layman', 'Layman'),
         ('admin', 'Admin')
+    )
+
+    groups = models.ManyToManyField(
+        "auth.Group",
+        related_name="customuser_set",
+        blank=True
+    )
+    user_permissions = models.ManyToManyField(
+        "auth.Permission",
+        related_name="customuser_set",
+        blank=True
     )
     
     user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES)

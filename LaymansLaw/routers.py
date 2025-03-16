@@ -1,8 +1,9 @@
-from rest_framework.routers import DefaultRouter
-from user.viewsets import CustomUserViewSet  # Adjust this import based on your app name
+from rest_framework import routers
 
-router = DefaultRouter()
-router.register(r'users', CustomUserViewSet, basename='customuser')
+from user.viewsets import AuthViewSet
+
+router = routers.SimpleRouter()
+
+router.register(r'user', AuthViewSet, basename="user")
 
 urlpatterns = router.urls
-

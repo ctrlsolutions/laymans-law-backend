@@ -26,3 +26,27 @@ class CustomUserSerializer(serializers.ModelSerializer):
             user_type=validated_data.get('user_type', "layman") 
         )
         return user
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'password']
+
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+        
+        if email and password:
+            user = authenticate(username=email, password=password)
+            if not user:
+                raise serializers.ValidationError("testing Invalid email or password.")
+            if not user.is_active:
+                raise serializers.ValidationError("User account is disabled.")
+        else:
+            raise serializers.ValidationError("Both email and password are required.")
+        
+        data['user'] = user
+        return data

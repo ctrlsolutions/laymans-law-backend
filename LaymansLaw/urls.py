@@ -22,6 +22,6 @@ from user.viewsets import CustomUserViewSet
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include((router.urls, 'core_api'), namespace='core_api')),
-    path('api/auth/', include('rest_framework.urls')),
-    path("api/users/signup/", CustomUserViewSet.as_view({"post": "signup"}), name="signup"),  # Add this line
+    path("api/users/signup/", CustomUserViewSet.as_view({"post": "signup"}), name="signup"),
 ]
+
