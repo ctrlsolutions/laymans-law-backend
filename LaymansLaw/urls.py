@@ -17,9 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from .routers import router
+from user.viewsets import CustomUserViewSet
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include((router.urls, 'core_api'), namespace='core_api')),
+    path("api/users/signup/", CustomUserViewSet.as_view({"post": "signup"}), name="signup"),
 ]
 
