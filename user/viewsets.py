@@ -8,8 +8,8 @@ from .models import CustomUser
 from .serializers import LoginSerializer
 from rest_framework.authentication import TokenAuthentication
 from .authentication import CsrfExemptSessionAuthentication
-from rest_framework.authtoken.models import Token  # Import Token model
-from .serializers import UserSerializer  # Import UserSerializer
+from rest_framework.authtoken.models import Token 
+from .serializers import UserSerializer
 
 class AuthViewSet(viewsets.ViewSet):
     authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
