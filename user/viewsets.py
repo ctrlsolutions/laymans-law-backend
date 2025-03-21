@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from django.db.utils import IntegrityError
 from rest_framework import status
 
-from .models import CustomUser
+from .models import CustomUser, Lawyer
 
 from .serializers import SignUpSerializer, LoginSerializer
 
@@ -33,15 +33,18 @@ class AuthViewSet(viewsets.ViewSet):
     
     @action(detail=False, methods=["post"], permission_classes=[AllowAny])
     def signup(self, request):
-        print("Signup request received!")
-        print("Request data:", request.data)  # Debugging
+        """Handles user registration based on user_type (Lawyer or Layman)"""
+        print("Signup request received:", request.data)  # Debugging
+
         serializer = SignUpSerializer(data=request.data)
-                
+
         if serializer.is_valid():
             try:
-                serializer.save() 
+                user = serializer.save()  # ✅ Creates user (and Lawyer if needed)
                 return Response({"message": "User created successfully!"}, status=status.HTTP_201_CREATED)
+
             except IntegrityError:
-                return Response({"error": "User with this email already exists."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "User with this email or roll number already exists."}, status=status.HTTP_400_BAD_REQUEST)
+
         print("Errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

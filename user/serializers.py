@@ -3,30 +3,52 @@ from .models import CustomUser
 from django.contrib.auth import authenticate
 
 
+from rest_framework import serializers
+from django.db import IntegrityError
+from .models import CustomUser, Lawyer
+
 class SignUpSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
+    user_type = serializers.ChoiceField(choices=CustomUser.USER_TYPE_CHOICES)  # ✅ Add user_type
+
+    roll_number = serializers.IntegerField(required=False)  # ✅ Only for Lawyers
+    roll_signed_date = serializers.DateField(required=False)
+
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'contact_number', 'gender', 'birth_date', 'password', 'confirm_password']
+        fields = [
+            "first_name", "last_name", "email", "contact_number",
+            "gender", "birth_date", "password", "confirm_password",
+            "user_type", "roll_number", "roll_signed_date"  # ✅ Add Lawyer fields
+        ]
 
     def validate(self, data):
-        if data['password'] != data['confirm_password']:
-            raise serializers.ValidationError("Passwords do not match")
+        """Custom validation to check password match and Lawyer-specific fields"""
+        if data["password"] != data["confirm_password"]:
+            raise serializers.ValidationError({"password": "Passwords do not match"})
+
+        if data["user_type"] == "lawyer":
+            if "roll_number" not in data or "roll_signed_date" not in data:
+                raise serializers.ValidationError({"lawyer_info": "Roll number and roll signed date are required for lawyers."})
+        
         return data
-    
+
     def create(self, validated_data):
-        validated_data.pop('confirm_password')
-        user = CustomUser.objects.create_user(
-            email=validated_data['email'],
-            password=validated_data['password'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
-            birth_date=validated_data['birth_date'],
-            gender=validated_data['gender'],
-            contact_number=validated_data.get('contact_number', ""),
-            user_type=validated_data.get('user_type', "layman") 
-        )
+        """Create a CustomUser and Lawyer if needed"""
+        validated_data.pop("confirm_password")  # ✅ Remove confirm_password before saving
+        
+        user_type = validated_data.pop("user_type")
+        roll_number = validated_data.pop("roll_number", None)  # ✅ Extract Lawyer fields
+        roll_signed_date = validated_data.pop("roll_signed_date", None)
+
+        user = CustomUser.objects.create_user(**validated_data, user_type=user_type)
+
+        if user_type == "lawyer":
+            if roll_number and roll_signed_date:
+                Lawyer.objects.create(user=user, roll_number=roll_number, roll_signed_date=roll_signed_date)
+
         return user
+
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -41,7 +63,7 @@ class LoginSerializer(serializers.Serializer):
         password = data.get('password')
         
         if email and password:
-            user = authenticate(username=email, password=password)
+            user = authenticate(email=email, password=password)
             if not user:
                 raise serializers.ValidationError("testing Invalid email or password.")
             if not user.is_active:
