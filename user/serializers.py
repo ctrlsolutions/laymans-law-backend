@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from .models import CustomUser
+from django.contrib.auth import authenticate
 
 
-class CustomUserSerializer(serializers.ModelSerializer):
+class SignUpSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
     class Meta:
         model = CustomUser
