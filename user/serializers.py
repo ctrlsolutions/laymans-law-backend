@@ -9,17 +9,17 @@ from .models import CustomUser, Lawyer
 
 class SignUpSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True)
-    user_type = serializers.ChoiceField(choices=CustomUser.USER_TYPE_CHOICES)  # ✅ Add user_type
+    user_type = serializers.ChoiceField(choices=CustomUser.USER_TYPE_CHOICES)
 
-    roll_number = serializers.IntegerField(required=False)  # ✅ Only for Lawyers
-    roll_signed_date = serializers.DateField(required=False)
+    roll_number = serializers.IntegerField(required=False, allow_null=True)
+    roll_signed_date = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = CustomUser
         fields = [
             "first_name", "last_name", "email", "contact_number",
             "gender", "birth_date", "password", "confirm_password",
-            "user_type", "roll_number", "roll_signed_date"  # ✅ Add Lawyer fields
+            "user_type", "roll_number", "roll_signed_date"
         ]
 
     def validate(self, data):
@@ -28,24 +28,28 @@ class SignUpSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"password": "Passwords do not match"})
 
         if data["user_type"] == "lawyer":
-            if "roll_number" not in data or "roll_signed_date" not in data:
-                raise serializers.ValidationError({"lawyer_info": "Roll number and roll signed date are required for lawyers."})
+            if not data.get("roll_number") or not data.get("roll_signed_date"):
+                raise serializers.ValidationError({
+                    "lawyer_info": "Roll number and roll signed date are required for lawyers."
+                })
+        else:
+            data.pop("roll_number", None)
+            data.pop("roll_signed_date", None)
         
         return data
 
     def create(self, validated_data):
         """Create a CustomUser and Lawyer if needed"""
-        validated_data.pop("confirm_password")  # ✅ Remove confirm_password before saving
+        validated_data.pop("confirm_password")
         
         user_type = validated_data.pop("user_type")
-        roll_number = validated_data.pop("roll_number", None)  # ✅ Extract Lawyer fields
+        roll_number = validated_data.pop("roll_number", None)  
         roll_signed_date = validated_data.pop("roll_signed_date", None)
 
         user = CustomUser.objects.create_user(**validated_data, user_type=user_type)
 
-        if user_type == "lawyer":
-            if roll_number and roll_signed_date:
-                Lawyer.objects.create(user=user, roll_number=roll_number, roll_signed_date=roll_signed_date)
+        if user_type == "lawyer" and roll_number and roll_signed_date:
+            Lawyer.objects.create(user=user, roll_number=roll_number, roll_signed_date=roll_signed_date)
 
         return user
 
