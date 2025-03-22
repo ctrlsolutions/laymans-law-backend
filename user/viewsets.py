@@ -32,8 +32,10 @@ class AuthViewSet(viewsets.ViewSet):
             user = serializer.validated_data['user']
             login(request, user)
             print(f"User {user.email} successfully logged in!")
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({"message": "Login successful!", "token": token.key})
+            token, _ = Token.objects.get_or_create(user=user)
+            response = JsonResponse({"message": "Login successful!", "user_id": user.user_id, "user_type": user.user_type})
+            response.set_cookie("authToken", token.key, httponly=True, samesite="Lax", secure=True)
+            return response 
         return Response(serializer.errors, status=400)
 
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
@@ -44,13 +46,13 @@ class AuthViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["post"], permission_classes=[AllowAny])
     def signup(self, request):
         """Handles user registration based on user_type (Lawyer or Layman)"""
-        print("Signup request received:", request.data)  # Debugging
+        print("Signup request received:", request.data)
 
         serializer = SignUpSerializer(data=request.data)
 
         if serializer.is_valid():
             try:
-                user = serializer.save()  # ✅ Creates user (and Lawyer if needed)
+                user = serializer.save()
                 return Response({"message": "User created successfully!"}, status=status.HTTP_201_CREATED)
 
             except IntegrityError:
