@@ -9,11 +9,19 @@ from .serializers import SignUpSerializer, LoginSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils.decorators import method_decorator
+from django.http import JsonResponse
+
 
 from django.contrib.auth import login, logout
 
 class AuthViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
+    @method_decorator(ensure_csrf_cookie)
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    def csrf(self, request):
+        return JsonResponse({"message": "CSRF cookie set"})
 
     @action(detail=False, methods=['post'])
     def login(self, request):
