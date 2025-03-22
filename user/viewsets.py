@@ -12,6 +12,7 @@ from rest_framework.decorators import action
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
+from rest_framework.authtoken.models import Token
 
 
 from django.contrib.auth import login, logout
@@ -31,7 +32,8 @@ class AuthViewSet(viewsets.ViewSet):
             user = serializer.validated_data['user']
             login(request, user)
             print(f"User {user.email} successfully logged in!")
-            return Response({"message": "Login successful!"})
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({"message": "Login successful!", "token": token.key})
         return Response(serializer.errors, status=400)
 
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
