@@ -59,16 +59,9 @@ class AuthViewSet(viewsets.ViewSet):
         print("Errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
-    def user(self, request):
-        serializer = LoginSerializer(request.user)
-        return Response(serializer.data)
-    
     @action(detail=False, methods=['get'], url_path='profile', permission_classes=[IsAuthenticated])
     def profile(self, request):
         user = request.user
-        # user = CustomUser.objects.filter(email="johndoe@gmail.com")  # Get the logged-in user
-        print(user)
         return Response({
             "first_name": user.first_name, 
             "last_name": user.last_name, 
