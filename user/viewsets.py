@@ -13,7 +13,8 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
-
+from rest_framework.authentication import TokenAuthentication
+from .authentication import CookieTokenAuthentication
 
 from django.contrib.auth import login, logout
 
@@ -34,7 +35,7 @@ class AuthViewSet(viewsets.ViewSet):
             print(f"User {user.email} successfully logged in!")
             token, _ = Token.objects.get_or_create(user=user)
             response = JsonResponse({"message": "Login successful!", "user_id": user.user_id, "user_type": user.user_type})
-            response.set_cookie("authToken", token.key, httponly=True, samesite="Lax", secure=True)
+            response.set_cookie("authToken", token.key, httponly=True, samesite="None", secure=True)
             return response 
         return Response(serializer.errors, status=400)
 
@@ -61,9 +62,10 @@ class AuthViewSet(viewsets.ViewSet):
         print("Errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    @action(detail=False, methods=['get'], url_path='profile', permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'], url_path='profile', permission_classes=[IsAuthenticated], authentication_classes = [CookieTokenAuthentication, TokenAuthentication])
     def profile(self, request):
         user = request.user
+        print(user, user.first_name, user.last_name, user.email, user.contact_number, user.gender, user.birth_date, user.user_type)
         return Response({
             "first_name": user.first_name, 
             "last_name": user.last_name, 
