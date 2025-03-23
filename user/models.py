@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-
+from django.conf import settings
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -85,7 +85,7 @@ class CustomUser(AbstractBaseUser):
     objects = CustomUserManager()
 
 class Lawyer(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='lawyer_profile')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='lawyer_profile', primary_key=True)
     roll_number = models.IntegerField(unique=True)
     roll_signed_date = models.DateField()
 
@@ -93,5 +93,5 @@ class Lawyer(models.Model):
     verified = models.BooleanField(default=False)
     cases_taken = models.IntegerField(default=0)
 
-class Layman(CustomUser):
-    pass
+# class Layman(CustomUser):
+#     pass
