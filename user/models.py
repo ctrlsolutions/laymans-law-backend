@@ -91,7 +91,9 @@ class Lawyer(models.Model):
 
     ## PROFILE
     verified = models.BooleanField(default=False)
-    cases_taken = models.IntegerField(default=0)
+    cases_active = models.IntegerField(default=0)
+    cases_finished = models.IntegerField(default=0)
+    wiki_contributions = models.IntegerField(default=0)
 
 # class Layman(CustomUser):
 #     pass
