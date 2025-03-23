@@ -1,3 +1,4 @@
+from rest_framework.authentication import TokenAuthentication
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
 
@@ -23,3 +24,14 @@ class EmailBackend(ModelBackend):
             return user
 
         return None
+
+
+class CookieTokenAuthentication(TokenAuthentication):
+    def authenticate(self, request):
+        # Get token from the `authToken` cookie
+        token = request.COOKIES.get("authToken")
+        print("Received authToken from cookies:", token)
+        if not token:
+            return None  # No token, return None so DRF tries other authentication methods
+
+        return self.authenticate_credentials(token)

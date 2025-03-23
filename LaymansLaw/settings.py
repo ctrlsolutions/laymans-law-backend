@@ -99,6 +99,7 @@ DATABASES = {
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'user.authentication.CookieTokenAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
@@ -148,3 +149,8 @@ AUTHENTICATION_BACKENDS = [
     'user.authentication.EmailBackend',  # Use email for login
     'django.contrib.auth.backends.ModelBackend',  # Keep the default backend
 ]
+
+SESSION_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SECURE = True
