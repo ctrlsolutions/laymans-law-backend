@@ -2,8 +2,6 @@ from rest_framework import viewsets
 from django.db.utils import IntegrityError
 from rest_framework import status
 
-from .models import CustomUser, Lawyer
-
 from .serializers import SignUpSerializer, LoginSerializer, UserProfileSerializer
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -41,10 +39,9 @@ class AuthViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated], authentication_classes=[CookieTokenAuthentication, TokenAuthentication])
     def logout(self, request):
-        if isinstance(request.auth, Token):  # Token Authentication
+        if isinstance(request.auth, Token):
             request.auth.delete()
-        logout(request)  # Session Authentication
-        
+        logout(request)
         return Response({"message": "Logged out successfully!"}, status=200)
     
     @action(detail=False, methods=["post"], permission_classes=[AllowAny])
