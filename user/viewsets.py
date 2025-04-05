@@ -29,7 +29,6 @@ class AuthViewSet(viewsets.ViewSet):
         print(request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
-            login(request, user)
             print(f"User {user.email} successfully logged in!")
             token, _ = Token.objects.get_or_create(user=user)
             response = JsonResponse({"message": "Login successful!", "user_id": user.user_id, "user_type": user.user_type})
@@ -41,8 +40,9 @@ class AuthViewSet(viewsets.ViewSet):
     def logout(self, request):
         if isinstance(request.auth, Token):
             request.auth.delete()
-        logout(request)
-        return Response({"message": "Logged out successfully!"}, status=200)
+            response = Response({"message": "Logged out successfully!"}, status=200)
+            response.delete_cookie("authToken", samesite="None")
+        return response
     
     @action(detail=False, methods=["post"], permission_classes=[AllowAny])
     def signup(self, request):
