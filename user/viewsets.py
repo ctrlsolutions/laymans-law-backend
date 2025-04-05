@@ -2,16 +2,14 @@ from rest_framework import viewsets
 from django.db.utils import IntegrityError
 from rest_framework import status
 
-from .models import CustomUser, Lawyer
-
-from .serializers import SignUpSerializer, LoginSerializer
+from .serializers import SignUpSerializer, LoginSerializer, UserProfileSerializer
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
-from django.http import JsonResponse
+from django.http import JsonResponse    
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from .authentication import CookieTokenAuthentication
@@ -39,10 +37,12 @@ class AuthViewSet(viewsets.ViewSet):
             return response 
         return Response(serializer.errors, status=400)
 
-    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated], authentication_classes=[CookieTokenAuthentication, TokenAuthentication])
     def logout(self, request):
+        if isinstance(request.auth, Token):
+            request.auth.delete()
         logout(request)
-        return Response({"message": "Logged out successfully!"})
+        return Response({"message": "Logged out successfully!"}, status=200)
     
     @action(detail=False, methods=["post"], permission_classes=[AllowAny])
     def signup(self, request):
@@ -62,8 +62,8 @@ class AuthViewSet(viewsets.ViewSet):
         print("Errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    @action(detail=False, methods=['get'], url_path='profile', permission_classes=[IsAuthenticated], authentication_classes = [CookieTokenAuthentication, TokenAuthentication])
-    def profile(self, request):
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], authentication_classes = [CookieTokenAuthentication, TokenAuthentication])
+    def get_profile(self, request):
         user = request.user
         print(user, user.first_name, user.last_name, user.email, user.contact_number, user.gender, user.birth_date, user.user_type)
         return Response({
@@ -75,4 +75,15 @@ class AuthViewSet(viewsets.ViewSet):
             "birth_date": user.birth_date, 
             "user_type": user.user_type
         })
+    
+    @action(detail=False, methods=['patch'], permission_classes=[IsAuthenticated], authentication_classes = [CookieTokenAuthentication, TokenAuthentication])
+    def update_profile(self, request):
+        user = request.user
+        serializer = UserProfileSerializer(user, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Profile updated successfully!", "data": serializer.data}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
