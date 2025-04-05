@@ -77,3 +77,16 @@ class LoginSerializer(serializers.Serializer):
         
         data['user'] = user
         return data
+    
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ["first_name", "last_name", "email", "contact_number", "gender", "birth_date", "user_type"]
+        read_only_fields = ["email", "user_type"]  # Prevent modification of email & user_type
+
+    def update(self, instance, validated_data):
+        """Update only the provided fields"""
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
