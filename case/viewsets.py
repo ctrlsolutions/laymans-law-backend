@@ -15,8 +15,7 @@ class CaseViewSet(viewsets.ModelViewSet):
     authentication_classes = [CookieTokenAuthentication, TokenAuthentication]  # Add custom authentication
 
     def get_queryset(self):
-        """Return only open cases."""
-        return Case.objects.filter(status='open')
+        return Case.objects.all()
 
     def perform_create(self, serializer):
         """Automatically attach the logged-in user to the case."""
