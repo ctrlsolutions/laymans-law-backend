@@ -17,7 +17,7 @@ class Case(models.Model):
 
     title = models.CharField(max_length=255)
     description = models.TextField()
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="cases")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="cases")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='open')
     case_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='criminal')  # New type field
     created_date = models.DateTimeField(auto_now_add=True)
