@@ -32,6 +32,7 @@ class AuthViewSet(viewsets.ViewSet):
             login(request, user)
             print(f"User {user.email} successfully logged in!")
             token, _ = Token.objects.get_or_create(user=user)
+            print(token)
             response = JsonResponse({"message": "Login successful!", "user_id": user.user_id, "user_type": user.user_type})
             response.set_cookie("authToken", token.key, httponly=True, samesite="None", secure=True)
             return response 
