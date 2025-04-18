@@ -90,3 +90,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+    
+class NestedUserSerializer(serializers.ModelSerializer):
+    """
+    Provides a concise representation of a user, suitable for nesting
+    within other serializers (like CaseSerializer).
+    """
+    class Meta:
+        model = CustomUser
+        # Include only the fields you want to show when a user is linked from a case
+        fields = ['user_id', 'first_name', 'last_name', 'user_type'] # Adjust as needed (maybe add email?)
+        read_only_fields = fields # Ensure it's read-only in this context
