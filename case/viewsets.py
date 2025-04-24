@@ -19,4 +19,4 @@ class CaseViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Automatically attach the logged-in user to the case."""
-        serializer.save(user=self.request.user)
+        serializer.save(created_by=self.request.user)
