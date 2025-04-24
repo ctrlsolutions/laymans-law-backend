@@ -4,6 +4,7 @@ from django.conf import settings
 class Case(models.Model):
     STATUS_CHOICES = [
         ('open', 'Open'),
+        ('active', 'Active'),
         ('closed', 'Closed'),
     ]
 
@@ -18,9 +19,11 @@ class Case(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="cases")
+    assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, related_name="accepted_cases", null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='open')
     case_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='criminal')  # New type field
     created_date = models.DateTimeField(auto_now_add=True)
+    accepted_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.title
