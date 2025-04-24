@@ -3,21 +3,19 @@ from django.conf import settings
 import os
 
 def upload_to_documents(instance, filename):
-    # Ensure that the instance is saved and the user is populated
-    if instance.created_by and instance.created_by.user_id:  # Use user_id instead of id
+    if instance.created_by and instance.created_by.user_id:
         return os.path.join('documents', f'user_{instance.created_by.user_id}', f'case_{instance.id}', filename)
     return os.path.join('documents', 'default', filename)
 
 def upload_to_images(instance, filename):
-    if instance.created_by and instance.created_by.user_id:  # Use user_id instead of id
+    if instance.created_by and instance.created_by.user_id:
         return os.path.join('images', f'user_{instance.created_by.user_id}', f'case_{instance.id}', filename)
     return os.path.join('images', 'default', filename)
 
 def upload_to_videos(instance, filename):
-    if instance.created_by and instance.created_by.user_id:  # Use user_id instead of id
+    if instance.created_by and instance.created_by.user_id:
         return os.path.join('videos', f'user_{instance.created_by.user_id}', f'case_{instance.id}', filename)
     return os.path.join('videos', 'default', filename)
-
 
 class Case(models.Model):
     STATUS_CHOICES = [
@@ -52,10 +50,9 @@ class Case(models.Model):
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
-        super().save(*args, **kwargs)  # Save to generate ID
+        super().save(*args, **kwargs)
 
         if is_new:
-            # Debugging: Check the CustomUser object
             if self.created_by:
                 print(f"Created By (User): {self.created_by} | user_id: {getattr(self.created_by, 'user_id', None)}")
             
@@ -66,5 +63,4 @@ class Case(models.Model):
             if self.video:
                 self.video.name = upload_to_videos(self, os.path.basename(self.video.name))
 
-            # Save again after setting the correct paths
             super().save(update_fields=['document', 'image', 'video'])

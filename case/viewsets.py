@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication
 from .models import Case
 from .serializers import CaseSerializer
-from user.authentication import CookieTokenAuthentication  # Import the custom authentication class
+from user.authentication import CookieTokenAuthentication 
 from rest_framework.authentication import TokenAuthentication
 
 class CaseViewSet(viewsets.ModelViewSet):
@@ -11,7 +11,7 @@ class CaseViewSet(viewsets.ModelViewSet):
     queryset = Case.objects.all()
     serializer_class = CaseSerializer
     permission_classes = [IsAuthenticated]
-    authentication_classes = [CookieTokenAuthentication, TokenAuthentication]  # Add custom authentication
+    authentication_classes = [CookieTokenAuthentication, TokenAuthentication]  
 
     def get_queryset(self):
         return Case.objects.all()

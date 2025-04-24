@@ -8,7 +8,6 @@ class CaseSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_by']
 
     def create(self, validated_data):
-        # Automatically attach the logged-in user to the case
-        user = self.context['request'].user  # Get the user from the request context
+        user = self.context['request'].user  
         validated_data['created_by'] = user
         return super().create(validated_data)
