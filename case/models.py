@@ -1,5 +1,15 @@
 from django.db import models
 from django.conf import settings
+import os
+
+def upload_to_documents(instance, filename):
+    return os.path.join('documents', f'case_{instance.id}', filename)
+
+def upload_to_images(instance, filename):
+    return os.path.join('images', f'case_{instance.id}', filename)
+
+def upload_to_videos(instance, filename):
+    return os.path.join('videos', f'case_{instance.id}', filename)
 
 class Case(models.Model):
     STATUS_CHOICES = [
@@ -25,10 +35,9 @@ class Case(models.Model):
     case_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='criminal')
     created_date = models.DateTimeField(auto_now_add=True)
 
-    # File handling (can store PDFs, DOCs, images, and videos)
-    document = models.FileField(upload_to='documents/', null=True, blank=True)  # for general documents (PDF, DOC)
-    image = models.ImageField(upload_to='images/', null=True, blank=True)  # for images (e.g., JPG, PNG)
-    video = models.FileField(upload_to='videos/', null=True, blank=True)  # for videos (e.g., MP4, AVI)
+    document = models.FileField(upload_to=upload_to_documents, null=True, blank=True)
+    image = models.ImageField(upload_to=upload_to_images, null=True, blank=True)
+    video = models.FileField(upload_to=upload_to_videos, null=True, blank=True)
 
     def __str__(self):
         return self.title
