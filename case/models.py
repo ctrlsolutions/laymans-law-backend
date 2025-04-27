@@ -54,8 +54,7 @@ class Case(models.Model):
 
         if is_new:
             if self.created_by:
-                print(f"Created By (User): {self.created_by} | user_id: {getattr(self.created_by, 'user_id', None)}")
-            
+                print(f"Created By (User): {self.created_by} | user_id: {getattr(self.created_by, 'user_id', None)}")  
             if self.document:
                 self.document.name = upload_to_documents(self, os.path.basename(self.document.name))
             if self.image:
