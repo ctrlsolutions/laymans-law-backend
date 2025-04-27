@@ -22,7 +22,6 @@ class Case(models.Model):
         ('open', 'Open'),
         ('ongoing', 'Ongoing'),
         ('discarded', 'Discarded'),
-        ('active', 'Active'),
         ('closed', 'Closed'),
     ]
 
