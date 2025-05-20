@@ -19,11 +19,15 @@ class CaseSerializer(serializers.ModelSerializer):
             'case_type',
             'created_date',
             'accepted_date',
-            # 'evidence_image', 
-            # 'evidence_document',
-            # 'attachments',
+            'image', 
+            'video',
+            'document',
+            'attachments',
         )
         read_only_fields = ('created_by', 'assigned_to', 'created_date', 'accepted_date', 'status')
+
+    def get_attachments(self, obj):
+        return CaseAttachmentSerializer(obj.attachments.all(), many=True).data
 
     def create(self, validated_data):
         user = self.context['request'].user  

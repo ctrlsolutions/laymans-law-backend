@@ -7,6 +7,9 @@ from user.authentication import CookieTokenAuthentication
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import action
+from django.utils import timezone
+from rest_framework.response import Response
+from rest_framework import status
 
 class CaseViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'put', 'patch', 'delete']  
@@ -47,23 +50,13 @@ class CaseViewSet(viewsets.ModelViewSet):
 
     # --- Add other custom actions if needed ---
     # Example: Action for a lawyer to close/resolve a case
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['patch'], url_path="close")
     def close(self, request, pk=None):
-         case = self.get_object()
-         # Check if the requesting lawyer is the assigned lawyer
-         if case.assigned_to != request.user:
-              return Response(
-                   {'detail': 'You are not assigned to this case.'},
-                   status=status.HTTP_403_FORBIDDEN
-              )
-         if case.status == 'closed':
-              return Response(
-                   {'detail': 'Case is already closed.'},
-                   status=status.HTTP_400_BAD_REQUEST
-              )
-
-         case.status = 'closed'
-         # Maybe add a 'closed_date' field?
-         case.save()
-         serializer = self.get_serializer(case)
-         return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            case = self.get_object()
+            case.status = "closed"
+            case.save()
+            serializer = self.get_serializer(case)
+            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        except Case.DoesNotExist:
+            return Response({"success": False, "error": "Case not found"}, status=status.HTTP_404_NOT_FOUND)
