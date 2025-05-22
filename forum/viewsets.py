@@ -30,3 +30,10 @@ class ForumPostViewSet(viewsets.ModelViewSet):
         post = self.get_object()
         is_bookmarked = ForumPostBookmark.objects.filter(user=request.user, post=post).exists()
         return Response({'bookmarked': is_bookmarked}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='bookmarked')
+    def bookmarked(self, request):
+        bookmarks = ForumPostBookmark.objects.filter(user=request.user)
+        posts = [b.post for b in bookmarks]
+        serializer = self.get_serializer(posts, many=True)
+        return Response(serializer.data, status=200)
