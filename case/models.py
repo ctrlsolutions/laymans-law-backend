@@ -37,9 +37,11 @@ class Case(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="cases")
+    assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, related_name="accepted_cases", null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='open')
     case_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='criminal')
     created_date = models.DateTimeField(auto_now_add=True)
+    accepted_date = models.DateTimeField(null=True, blank=True)
 
     document = models.FileField(upload_to=upload_to_documents, null=True, blank=True)
     image = models.ImageField(upload_to=upload_to_images, null=True, blank=True)
