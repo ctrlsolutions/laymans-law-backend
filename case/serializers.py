@@ -1,12 +1,19 @@
 from rest_framework import serializers
 from .models import Case, CaseAttachment
 from django.contrib.auth import get_user_model
+from user.models import CustomUser
 
 from user.serializers import NestedUserSerializer
 
 User = get_user_model()
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['user_id', 'first_name', 'last_name', 'email', 'contact_number']
+
 class CaseSerializer(serializers.ModelSerializer):
+    created_by = UserSerializer(read_only=True)
     class Meta:
         model = Case
         fields = (

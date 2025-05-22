@@ -13,7 +13,7 @@ from rest_framework import status
 
 class CaseViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'put', 'patch', 'delete']  
-    queryset = Case.objects.all()
+    queryset = Case.objects.all().select_related('created_by')
     serializer_class = CaseSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [CookieTokenAuthentication, TokenAuthentication] 
