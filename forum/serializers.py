@@ -6,14 +6,16 @@ User = get_user_model()
 
 class ForumPostSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
+    bookmark_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = ForumPost
-        fields = ['id', 'author', 'title', 'content', 'timestamp', 'category']
-        read_only_fields = ['author', 'timestamp']
+        fields = ['id', 'author', 'title', 'content', 'timestamp', 'category', 'bookmark_count', 'updated_at']
+        read_only_fields = ['author', 'timestamp', 'updated_at']
 
     def get_author(self, obj):
         return {
+            'user_id': obj.author.user_id,
             'first_name': obj.author.first_name,
             'last_name': obj.author.last_name
         }

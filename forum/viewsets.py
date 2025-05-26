@@ -3,9 +3,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import ForumPost,ForumPostBookmark, Comment, Reply
 from .serializers import ForumPostSerializer,ReplySerializer,CommentSerializer,ForumPostBookmarkSerializer
+from django.db.models import Count
 
 class ForumPostViewSet(viewsets.ModelViewSet):
-    queryset = ForumPost.objects.all().order_by('-timestamp')
+    queryset = ForumPost.objects.annotate(bookmark_count=Count('bookmarks')).order_by('-timestamp')
     serializer_class = ForumPostSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -36,4 +37,4 @@ class ForumPostViewSet(viewsets.ModelViewSet):
         bookmarks = ForumPostBookmark.objects.filter(user=request.user)
         posts = [b.post for b in bookmarks]
         serializer = self.get_serializer(posts, many=True)
-        return Response(serializer.data, status=200)
+        return Response(serializer.data, status=status.HTTP_200_OK)
