@@ -45,8 +45,11 @@ INSTALLED_APPS = [
     'corsheaders',
     'user',
     'case',
+<<<<<<< Updated upstream
     'wiki',
     'forum',
+=======
+>>>>>>> Stashed changes
     
 ]
 

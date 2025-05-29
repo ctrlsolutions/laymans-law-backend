@@ -1,8 +1,8 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import ForumPost,ForumPostBookmark, Comment, Reply
-from .serializers import ForumPostSerializer,ReplySerializer,CommentSerializer,ForumPostBookmarkSerializer
+from .models import ForumPost,ForumPostBookmark
+from .serializers import ForumPostSerializer,ForumPostBookmarkSerializer
 from django.db.models import Count
 
 class ForumPostViewSet(viewsets.ModelViewSet):
