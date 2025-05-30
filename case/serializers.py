@@ -32,7 +32,18 @@ class CaseSerializer(serializers.ModelSerializer):
             'attachments',
         )
         read_only_fields = ('created_by', 'assigned_to', 'created_date', 'accepted_date', 'status')
+        
 
+    def get_image(self, obj):
+        if obj.image:
+            return self.context['request'].build_absolute_uri(obj.image.url)
+        return None
+
+    def get_video(self, obj):
+        if obj.video:
+            return self.context['request'].build_absolute_uri(obj.video.url)
+        return None
+    
     def get_attachments(self, obj):
         return CaseAttachmentSerializer(obj.attachments.all(), many=True).data
 
@@ -44,5 +55,10 @@ class CaseSerializer(serializers.ModelSerializer):
 class CaseAttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CaseAttachment
-        fields = ('id', 'case', 'file', 'uploaded_at', 'description')
+        fields = ('id', 'case', 'file', 'file_url', 'uploaded_at', 'description')
         read_only_fields = ('case', 'uploaded_at') # Case might be set based on URL
+
+        def get_file_url(self, obj):
+            if obj.file:
+                return self.context['request'].build_absolute_uri(obj.file.url)
+            return None
