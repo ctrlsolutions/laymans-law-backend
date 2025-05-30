@@ -26,6 +26,36 @@ class CaseViewSet(viewsets.ModelViewSet):
         """Automatically attach the logged-in user to the case."""
         serializer.save(user=self.request.user)
 
+    @action(detail=False, methods=["post"], url_path="submit_case")
+    def submit_case(self, request):
+
+        case_data = {
+            'title': request.data.get('title'),
+            'case_type': request.data.get('case_type'),
+            'description': request.data.get('description'),
+        }
+
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            case = serializer.save()
+            
+            files = request.FILES.getlist('files') 
+
+            for file in files:
+                if file.content_type.startswith('image/'):
+                    case.image = file
+                elif file.content_type.startswith('video/'):
+                    case.video = file
+                else:
+                    case.document = file
+                case.save()
+
+            return Response({"message": "Case submitted successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED)
+        
+        print("Errors:", serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def accept(self, request, pk=None):
         """
@@ -48,8 +78,6 @@ class CaseViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(case)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # --- Add other custom actions if needed ---
-    # Example: Action for a lawyer to close/resolve a case
     @action(detail=True, methods=['patch'], url_path="close")
     def close(self, request, pk=None):
         try:
@@ -58,5 +86,14 @@ class CaseViewSet(viewsets.ModelViewSet):
             case.save()
             serializer = self.get_serializer(case)
             return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        except Case.DoesNotExist:
+            return Response({"success": False, "error": "Case not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=True, methods=['delete'], url_path="delete")
+    def delete(self, request, pk=None):
+        try:
+            case = self.get_object()
+            case.delete()
+            return Response({"success": True, "message": "Case deleted successfully"}, status=status.HTTP_200_OK)
         except Case.DoesNotExist:
             return Response({"success": False, "error": "Case not found"}, status=status.HTTP_404_NOT_FOUND)
