@@ -56,7 +56,7 @@ class CaseAttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CaseAttachment
         fields = ('id', 'case', 'file', 'file_url', 'uploaded_at', 'description')
-        read_only_fields = ('case', 'uploaded_at') # Case might be set based on URL
+        read_only_fields = ('case', 'uploaded_at')
 
         def get_file_url(self, obj):
             if obj.file:

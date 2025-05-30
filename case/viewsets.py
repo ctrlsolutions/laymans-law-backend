@@ -28,41 +28,26 @@ class CaseViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="submit_case")
     def submit_case(self, request):
-         # Debugging: Print both data and files
-        print("Received POST data:", request.data)
-        print("Received FILES:", request.FILES)
 
-        # Create a mutable copy of the request data
-        # data = request.data.copy()
-        
-        # Handle file uploads
-        #files = request.FILES.getlist('files')  # This matches your frontend's 'files' key
-        
-        # Create the case first with basic data
         case_data = {
             'title': request.data.get('title'),
             'case_type': request.data.get('case_type'),
             'description': request.data.get('description'),
-            # 'created_by': request.user.id
         }
 
         serializer = self.get_serializer(data=request.data)
 
         if serializer.is_valid():
             case = serializer.save()
-            # Create a mutable copy of the request data
-            # data = request.data.copy()
             
-            # Handle file uploads
-            files = request.FILES.getlist('files')  # This matches your frontend's 'files' key
-            
-            # Create the case first with basic data
+            files = request.FILES.getlist('files') 
+
             for file in files:
                 if file.content_type.startswith('image/'):
                     case.image = file
                 elif file.content_type.startswith('video/'):
                     case.video = file
-                else:  # Default to document
+                else:
                     case.document = file
                 case.save()
 
