@@ -14,6 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CaseSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only=True)
+    attachments = serializers.SerializerMethodField()  
     class Meta:
         model = Case
         fields = (
@@ -32,7 +33,9 @@ class CaseSerializer(serializers.ModelSerializer):
             'attachments',
         )
         read_only_fields = ('created_by', 'assigned_to', 'created_date', 'accepted_date', 'status')
-        
+        extra_kwargs = {
+            'created_by': {'read_only': True},  # Let the view handle this
+        }
 
     def get_image(self, obj):
         if obj.image:
@@ -45,7 +48,12 @@ class CaseSerializer(serializers.ModelSerializer):
         return None
     
     def get_attachments(self, obj):
-        return CaseAttachmentSerializer(obj.attachments.all(), many=True).data
+        attachments = obj.attachments.all()
+        return CaseAttachmentSerializer(
+            attachments, 
+            many=True,
+            context={'request': self.context['request']}  # Pass request context
+        ).data
 
     def create(self, validated_data):
         user = self.context['request'].user  
@@ -53,12 +61,14 @@ class CaseSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 class CaseAttachmentSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField() 
     class Meta:
         model = CaseAttachment
         fields = ('id', 'case', 'file', 'file_url', 'uploaded_at', 'description')
         read_only_fields = ('case', 'uploaded_at')
 
-        def get_file_url(self, obj):
-            if obj.file:
-                return self.context['request'].build_absolute_uri(obj.file.url)
-            return None
+    def get_file_url(self, obj):
+        request = self.context.get('request')
+        if obj.file:
+            return request.build_absolute_uri(obj.file.url)
+        return None
