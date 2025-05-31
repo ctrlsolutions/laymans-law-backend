@@ -2,7 +2,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import ForumPost,ForumPostBookmark
-from .serializers import ForumPostSerializer,ForumPostBookmarkSerializer
+from .serializers import ForumPostSerializer
 from django.db.models import Count
 
 class ForumPostViewSet(viewsets.ModelViewSet):
@@ -13,18 +13,24 @@ class ForumPostViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(detail=True, methods=['post'], url_path='bookmark')
-    def bookmark(self, request, pk=None): #for toggling bookmark
+    @action(detail=True, methods=['post'])
+    def bookmark(self, request, pk=None):
+        forum = self.get_object()
         user = request.user
-        post = self.get_object()
 
-        bookmark, created = ForumPostBookmark.objects.get_or_create(user=user, post=post)
+        bookmark, created = ForumPostBookmark.objects.get_or_create(user=user, post=forum)
 
         if not created:
             bookmark.delete()
-            return Response({'bookmarked': False}, status=status.HTTP_200_OK)
+            bookmarked = False
+        else:
+            bookmarked = True
 
-        return Response({'bookmarked': True}, status=status.HTTP_201_CREATED)
+        bookmark_count = ForumPostBookmark.objects.filter(post=forum).count()
+        return Response({
+            "bookmarked": bookmarked,
+            "bookmark_count": bookmark_count
+        })
 
     @action(detail=True, methods=['get'], url_path='is-bookmarked')
     def is_bookmarked(self, request, pk=None): #for checking bookmark status
