@@ -1,11 +1,11 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication
-from .models import Case
-from .serializers import CaseSerializer
+from .models import Case, CaseAttachment
+from .serializers import CaseSerializer, CaseAttachmentSerializer
 from user.authentication import CookieTokenAuthentication 
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.decorators import action
 from django.utils import timezone
 from rest_framework.response import Response
@@ -17,7 +17,7 @@ class CaseViewSet(viewsets.ModelViewSet):
     serializer_class = CaseSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [CookieTokenAuthentication, TokenAuthentication] 
-    parser_classes = (MultiPartParser, FormParser)
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
 
     def get_queryset(self):
         return Case.objects.all()
@@ -28,33 +28,50 @@ class CaseViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="submit_case")
     def submit_case(self, request):
-
+        print("Request data:", request.data)  # Debug: See all incoming data
+        print("Request files:", request.FILES)  # Debug: See uploaded files
         case_data = {
             'title': request.data.get('title'),
             'case_type': request.data.get('case_type'),
             'description': request.data.get('description'),
+            'status': 'open',
         }
 
-        serializer = self.get_serializer(data=request.data)
-
-        if serializer.is_valid():
-            case = serializer.save()
+        serializer = self.get_serializer(data=case_data)
+        serializer.is_valid(raise_exception=True)
+        case = serializer.save(created_by=request.user)
             
-            files = request.FILES.getlist('files') 
+        files = request.FILES.getlist('files') 
+        print(f"Number of files received: {len(files)}")  # Debug: Count files
+        attachments = []
 
-            for file in files:
-                if file.content_type.startswith('image/'):
-                    case.image = file
-                elif file.content_type.startswith('video/'):
-                    case.video = file
-                else:
-                    case.document = file
-                case.save()
+        for file in files:
+            print(f"Processing file: {file.name}")  # Debug: File info
+            attachment = CaseAttachment.objects.create(
+                case=case,
+                file=file,
+                description=f"Uploaded with case submission"
+            )
+            attachments.append(attachment)
+            print(f"Created attachment ID: {attachment.id}")  # Debug: Attachment ID
 
-            return Response({"message": "Case submitted successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED)
-        
-        print("Errors:", serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Serialize attachments separately
+        attachment_serializer = CaseAttachmentSerializer(
+            attachments,
+            many=True,
+            context={'request': request}
+        )
+
+        print("Serialized attachments:", attachment_serializer.data)  # Debug: Final output
+
+        return Response(
+            {
+                "message": "Case submitted successfully!", 
+                "case": serializer.data,
+                "attachments": attachment_serializer.data,
+            },
+            status=status.HTTP_201_CREATED
+        )        
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def accept(self, request, pk=None):
