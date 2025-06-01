@@ -10,7 +10,7 @@ class SummarySerializer(serializers.ModelSerializer):
 class TranslationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Translation
-        fields = ['language_tagalog', 'language_bisaya', 'language_waray']
+        fields = ['language_tagalog', 'language_bisaya', 'language_waray', 'language_chavacano']
 
 class LawSerializer(serializers.ModelSerializer):
     summary = SummarySerializer(read_only=True)
@@ -18,7 +18,7 @@ class LawSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Law
-        fields = ['id', 'title', 'code', 'full_law', 'summary', 'translation']
+        fields = ['id', 'title', 'code', 'full_law', 'case_type', 'tags', 'summary', 'translation']
 
 class OFWSupportDetailSerializer(serializers.ModelSerializer):
     class Meta:
