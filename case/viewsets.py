@@ -1,8 +1,8 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication
-from .models import Case, CaseAttachment
-from .serializers import CaseSerializer, CaseAttachmentSerializer
+from .models import Case, CaseAttachment, Comment
+from .serializers import CaseSerializer, CaseAttachmentSerializer, CommentSerializer
 from user.authentication import CookieTokenAuthentication 
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
@@ -114,3 +114,22 @@ class CaseViewSet(viewsets.ModelViewSet):
             return Response({"success": True, "message": "Case deleted successfully"}, status=status.HTTP_200_OK)
         except Case.DoesNotExist:
             return Response({"success": False, "error": "Case not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CookieTokenAuthentication, TokenAuthentication]
+
+    def get_queryset(self):
+        case_id = self.request.query_params.get('case_id')
+        if case_id:
+            return Comment.objects.filter(case_id=case_id).select_related('author')
+        return Comment.objects.none()
+
+    def perform_create(self, serializer):
+        case_id = self.request.data.get('case')
+        try:
+            case = Case.objects.get(id=case_id)
+            serializer.save(author=self.request.user, case=case)
+        except Case.DoesNotExist:
+            raise serializer.ValidationError("Case does not exist")

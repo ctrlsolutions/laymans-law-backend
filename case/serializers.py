@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Case, CaseAttachment
+from .models import Case, CaseAttachment, Comment
 from django.contrib.auth import get_user_model
 from user.models import CustomUser
 
@@ -72,3 +72,17 @@ class CaseAttachmentSerializer(serializers.ModelSerializer):
         if obj.file:
             return request.build_absolute_uri(obj.file.url)
         return None
+    
+class CommentSerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
+    
+    class Meta:
+        model = Comment
+        fields = ('id', 'case', 'author', 'content', 'created_at', 'is_lawyer')
+        read_only_fields = ('author', 'created_at', 'is_lawyer')
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        validated_data['author'] = request.user
+        validated_data['is_lawyer'] = request.user.is_lawyer()  # Assuming you have this field
+        return super().create(validated_data)
