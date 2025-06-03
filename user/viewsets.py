@@ -13,6 +13,7 @@ from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from .authentication import CookieTokenAuthentication
+from case.models import Case
 
 from django.contrib.auth import login, logout
 
@@ -86,4 +87,19 @@ class AuthViewSet(viewsets.ViewSet):
             return Response({"message": "Profile updated successfully!", "data": serializer.data}, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], authentication_classes=[CookieTokenAuthentication, TokenAuthentication], url_path="lawyer_statistics")
+    def lawyer_statistics(self, request):
+        user = request.user
+
+        if user.user_type != "lawyer":
+            return Response({"error": "User is not a lawyer."}, status=403)
+
+        total_active_cases = Case.objects.filter(assigned_to=user, status="ongoing").count()
+        total_cases_finished = Case.objects.filter(assigned_to=user, status="closed").count()
+
+        return Response({
+            "cases_active": total_active_cases,
+            "cases_finished": total_cases_finished
+        })
 
