@@ -47,6 +47,7 @@ class Case(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='open')
     case_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     created_date = models.DateTimeField(auto_now_add=True)
+    edited_date = models.DateTimeField(auto_now=True)
     accepted_date = models.DateTimeField(null=True, blank=True)
     document = models.FileField(upload_to=upload_to_documents, null=True, blank=True)
     image = models.ImageField(upload_to=upload_to_images, null=True, blank=True)

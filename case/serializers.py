@@ -26,6 +26,7 @@ class CaseSerializer(serializers.ModelSerializer):
             'status',
             'case_type',
             'created_date',
+            'edited_date',
             'accepted_date',
             'image', 
             'video',
