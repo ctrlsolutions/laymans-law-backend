@@ -115,6 +115,17 @@ class CaseViewSet(viewsets.ModelViewSet):
         except Case.DoesNotExist:
             return Response({"success": False, "error": "Case not found"}, status=status.HTTP_404_NOT_FOUND)
 
+    @action(detail=True, methods=['patch'], url_path="discarded")
+    def discarded(self, request, pk=None):
+        try:
+            case = self.get_object()
+            case.status = 'discarded'
+            case.save()
+            serializer = self.get_serializer(case)
+            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        except Case.DoesNotExist:
+            return Response({"success": False, "error": "Case not found"}, status=status.HTTP_404_NOT_FOUND)
+
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
